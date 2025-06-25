@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productivity Time Tracker</title>  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      width: 350px;
+      height: 500px;
+      overflow-y: auto;
+    }
+    .active-site {
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+    .productive { color: #10B981; }
+    .unproductive { color: #EF4444; }
+    .neutral { color: #6B7280; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <div class="p-4">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-xl font-bold text-indigo-600 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Time Tracker
+      </h1>
+      <div class="relative inline-block w-10 mr-2 align-middle select-none">
+        <input type="checkbox" id="toggle" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+        <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+      </div>
+    </header>
+
+    <div class="current-tracking mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-medium">Current Session</h2>
+        <div class="text-sm text-indigo-600">15:32</div>
+      </div>
+      <div class="flex items-center">
+        <img src="https://www.google.com/s2/favicons?domain=github.com" alt="Site favicon" class="w-4 h-4 mr-2">
+        <div class="truncate flex-1">
+          <div class="font-medium">github.com</div>
+          <div class="text-xs text-gray-500 productive">Productive</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid grid grid-cols-3 gap-2 mb-6 text-center">
+      <div class="p-3 bg-white rounded-lg shadow-sm">
+        <div class="text-2xl font-bold text-indigo-600">3.8h</div>
+        <div class="text-xs text-gray-500">Today</div>
+      </div>
+      <div class="p-3 bg-white rounded-lg shadow-sm">
+        <div class="text-2xl font-bold text-green-500">78%</div>
+        <div class="text-xs text-gray-500">Productive</div>
+      </div>
+      <div class="p-3 bg-white rounded-lg shadow-sm">
+        <div class="text-2xl font-bold">22.1h</div>
+        <div class="text-xs text-gray-500">This Week</div>
+      </div>
+    </div>
+
+    <div class="chart-container mb-6">
+      <canvas id="productivityChart" height="200"></canvas>
+    </div>
+
+    <div class="mb-6">
+      <h2 class="font-medium mb-3">Recent Activity</h2>
+      <div class="space-y-2">
+        <div class="flex justify-between items-center p-2 rounded hover:bg-gray-50">
+          <div class="flex items-center">
+            <img src="https://www.google.com/s2/favicons?domain=github.com" alt="Site favicon" class="w-4 h-4 mr-2">
+            <span class="text-sm">github.com</span>
+          </div>
+          <div class="flex items-center">
+            <span class="text-xs mr-2 productive">1h 42m</span>
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+          </div>
+        </div>
+        <div class="flex justify-between items-center p-2 rounded hover:bg-gray-50">
+          <div class="flex items-center">
+            <img src="https://www.google.com/s2/favicons?domain=twitter.com" alt="Site favicon" class="w-4 h-4 mr-2">
+            <span class="text-sm">twitter.com</span>
+          </div>
+          <div class="flex items-center">
+            <span class="text-xs mr-2 unproductive">32m</span>
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex space-x-2 mb-6">
+      <button id="dashboard-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg text-sm font-medium">
+        View Dashboard
+      </button>
+      <button class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg text-sm font-medium">
+        Settings
+      </button>
+    </div>
+
+    <div class="text-xs text-gray-400">
+      Last sync: 2 minutes ago
+    </div>
+  </div>
+
+  <script>
+    // Chart.js initialization
+    const ctx = document.getElementById('productivityChart').getContext('2d');
+    const productivityChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Productive', 'Unproductive', 'Neutral'],
+        datasets: [{
+          data: [65, 20, 15],
+          backgroundColor: [
+            '#10B981',
+            '#EF4444',
+            '#9CA3AF'
+          ],
+          borderWidth: 0,
+          cutout: '75%'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 20
+            }
+          }
+        }
+      }
+    });
+
+    // Toggle switch functionality
+    const toggle = document.getElementById('toggle');
+    toggle.addEventListener('change', function() {
+      chrome.runtime.sendMessage({ action: this.checked ? 'startTracking' : 'stopTracking' });
+    });
+
+    // Initialize with Chrome storage data
+    chrome.storage.sync.get(['trackingEnabled', 'sites'], function(data) {
+      toggle.checked = data.trackingEnabled !== false;
+      
+      if (data.sites) {
+        // Update UI with stored site data
+      }
+    });
+
+    // Chrome API listeners for active tab changes
+    chrome.tabs.onActivated.addListener(updateCurrentTab);
+    chrome.tabs.onUpdated.addListener(updateCurrentTab);
+
+    async function updateCurrentTab() {
+      const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+      if (tab && tab.url) {
+        const url = new URL(tab.url);
+        document.querySelector('.current-tracking img').src = `https://www.google.com/s2/favicons?domain=${url.hostname}`;
+        document.querySelector('.current-tracking .font-medium').textContent = url.hostname;
+        // Update classification based on stored rules
+      }
+    }
+
+    // Periodically update the UI
+    setInterval(updateStats, 30000);
+    function updateStats() {
+      chrome.runtime.sendMessage({ action: 'getStats' }, function(response) {
+        // Update UI with new stats
+      });
+    }
+
+    // Initial update
+    updateCurrentTab();
+    updateStats();
+
+    document.getElementById('dashboard-btn').addEventListener('click', function() {
+      chrome.tabs.create({ url: chrome.runtime.getURL('popup/dashboard.html') });
+    });
+  </script>
+</body>
+</html>
+
