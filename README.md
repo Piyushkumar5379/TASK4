@@ -13,3 +13,5 @@
 *MENTOR*: NEELA SANTOSH KUMAR
 
 ## The Time Tracker Dashboard is a productivity monitoring tool that helps users track the time spent on various websites and activities throughout the day. It visualizes time usage with charts and provides insights into productive vs. unproductive activities.
+
+![Image](https://github.com/user-attachments/assets/11e78283-f727-4744-8274-5eace10a26d5)
